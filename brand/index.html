@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b3144" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Punta Espada" />
+  <title>Punta Espada Snack &amp; Bar · Cap Cana</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #1b3144;
+      --teal: #3f8587;
+      --teal-deep: #2f6d6f;
+      --paper: #f3f1ea;
+      --card: #fffcf7;
+      --ink: #1c2a32;
+      --muted: #6a7780;
+      --line: #e4dfd4;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+      --tap: 44px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; min-height: 100%; }
+    html { background: #12202c; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--ink);
+      touch-action: manipulation;
+    }
+    .phone {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      background: var(--paper);
+      position: relative;
+      box-shadow: 0 0 80px rgba(0,0,0,.4);
+      padding-bottom: calc(96px + var(--safe-b));
+    }
+    @media (max-width: 480px) {
+      html { background: var(--paper); }
+      .phone { max-width: none; box-shadow: none; }
+    }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .hero {
+      position: relative;
+      height: 132px;
+      overflow: hidden;
+      background: var(--navy);
+    }
+    .hero-pic {
+      width: 100%; height: 100%; object-fit: cover; object-position: center 46%;
+      display: block;
+    }
+    .hero-fade {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(18,32,44,.12) 0%, rgba(18,32,44,.18) 38%, rgba(18,32,44,.88) 100%);
+    }
+    .hero-copy {
+      position: absolute; left: 16px; right: 16px; bottom: 14px;
+      display: flex; gap: 12px; align-items: center; color: #fff;
+    }
+    .mark {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #fff; flex-shrink: 0;
+      box-shadow: 0 6px 20px rgba(0,0,0,.28);
+      object-fit: cover;
+    }
+    .kicker {
+      font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--teal); font-weight: 700;
+    }
+    .hero .kicker { color: #b7d6d4; }
+    h1 {
+      font-family: "Cormorant Garamond", serif; font-style: italic;
+      font-size: 26px; margin: 0; color: #fff; font-weight: 600; line-height: 1.05;
+    }
+    .hero .kicker { margin-top: 4px; }
+    .sub { font-size: 12px; color: rgba(255,255,255,.82); margin-top: 3px; }
+    .top {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(243,241,234,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 12px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mark-mini {
+      width: 0; height: 36px; border-radius: 50%; background: #fff;
+      flex-shrink: 0; object-fit: cover; opacity: 0; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(27,49,68,.08);
+      transition: width .2s ease, opacity .2s ease;
+    }
+    .mark-mini.show { width: 36px; opacity: 1; }
+    .chips {
+      display: flex; gap: 8px; overflow-x: auto; padding: 4px 4px 10px;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch; flex: 1;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0; border: 1px solid var(--line); background: var(--card);
+      color: var(--navy); border-radius: 999px;
+      min-height: var(--tap); padding: 0 16px;
+      font-size: 13px; font-weight: 600;
+    }
+    .chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .list { padding: 6px 14px 24px; }
+    .sec {
+      font-family: "Cormorant Garamond", serif; color: var(--navy); font-size: 24px;
+      margin: 14px 0 12px; font-weight: 600;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+      margin-bottom: 12px; display: grid; grid-template-columns: 108px 1fr;
+      overflow: hidden; box-shadow: 0 8px 22px rgba(27,49,68,.05);
+    }
+    .pic {
+      width: 108px; height: 100%; min-height: 118px;
+      object-fit: cover; background: #e8e4da; display: block;
+    }
+    .card .body { padding: 12px 12px 12px 12px; min-width: 0; display: flex; flex-direction: column; }
+    .card-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .card h3 { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--navy); line-height: 1.25; }
+    .card p { margin: 4px 0 0; font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .price { font-weight: 800; color: var(--teal-deep); white-space: nowrap; font-size: 14px; }
+    .add {
+      margin-top: auto; padding-top: 8px; background: var(--navy); color: #fff; border: 0; border-radius: 12px;
+      min-height: var(--tap); font-weight: 700; font-size: 13px; width: 100%;
+    }
+    .bar {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 24px); max-width: 406px;
+      bottom: calc(12px + var(--safe-b));
+      background: var(--navy); color: #fff; border-radius: 16px;
+      min-height: 56px; padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 12px 32px rgba(27,49,68,.35); z-index: 30; border: 0;
+    }
+    .bar[hidden] { display: none; }
+    .bar strong { font-size: 16px; }
+    .sheet {
+      position: fixed; inset: 0; z-index: 40; background: rgba(18,32,44,.55);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .sheet[hidden] { display: none; }
+    .panel {
+      background: var(--paper); width: 100%; max-width: 430px; max-height: 92vh; overflow: auto;
+      border-radius: 22px 22px 0 0; padding: 10px 0 calc(24px + var(--safe-b));
+    }
+    .grab { width: 40px; height: 4px; background: var(--line); border-radius: 4px; margin: 4px auto 10px; }
+    .sheet-pic {
+      width: calc(100% - 32px); margin: 0 16px 12px; height: 168px;
+      object-fit: cover; border-radius: 16px; display: block; background: #e8e4da;
+    }
+    .panel-pad { padding: 0 16px; }
+    .row { display: flex; justify-content: space-between; gap: 10px; margin: 8px 0; }
+    .row.tot { font-size: 16px; padding-top: 8px; border-top: 1px solid var(--line); }
+    label.l { display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin: 12px 0 6px; }
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 12px;
+      min-height: var(--tap); padding: 12px 14px; color: var(--ink);
+    }
+    .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opt {
+      border: 1px solid var(--line); background: #fff; border-radius: 999px;
+      min-height: var(--tap); padding: 0 14px; font-size: 13px; font-weight: 600; color: var(--navy);
+    }
+    .opt.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .place {
+      width: 100%; margin-top: 14px; background: var(--teal); color: #fff;
+      border: 0; border-radius: 14px; min-height: 52px; padding: 14px; font-weight: 800; font-size: 16px;
+    }
+    .place:disabled { opacity: .45; }
+    .ghost {
+      background: transparent; border: 0; color: var(--muted); font-weight: 600;
+      min-height: var(--tap); width: 100%;
+    }
+    .holes { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .hole {
+      border: 1px solid var(--line); background: #fff; border-radius: 12px;
+      min-height: var(--tap); font-weight: 700; color: var(--navy); font-size: 14px;
+    }
+    .hole.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+    .qty { display: flex; align-items: center; gap: 12px; }
+    .qty button {
+      width: var(--tap); height: var(--tap); border-radius: 12px;
+      border: 1px solid var(--line); background: #fff; font-size: 20px; color: var(--navy);
+    }
+    .line {
+      display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--line);
+    }
+    .line .thumb {
+      width: 72px; height: 72px; object-fit: cover; border-radius: 14px; background: #e7e1d6;
+    }
+    .line .ghost { width: auto; min-height: 36px; padding: 0; }
+    .ok { text-align: center; padding: 20px 8px; }
+    .ok h2 { font-family: "Cormorant Garamond", serif; color: var(--navy); font-style: italic; }
+    .ok .mark { width: 88px; height: 88px; margin: 0 auto 12px; display: block; }
+    .sheet-h {
+      font-family: "Cormorant Garamond", serif; margin: 0 0 6px; color: var(--navy);
+      font-style: italic; font-size: 26px; font-weight: 600;
+    }
+    .steps { display: flex; justify-content: space-between; gap: 6px; margin: 18px 0 8px; }
+    .step { flex: 1; text-align: center; font-size: 11px; font-weight: 700; color: #b5bec4; }
+    .step i {
+      display: block; height: 6px; border-radius: 99px; background: var(--line); margin-bottom: 8px;
+    }
+    .step.on, .step.done { color: var(--navy); }
+    .step.on i, .step.done i { background: var(--teal); }
+    .step.on i { animation: live-bar 1.5s ease-in-out infinite; }
+    .kicker.live { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--teal-deep); }
+    .pulse {
+      width: 10px; height: 10px; border-radius: 50%; background: #3f8587;
+      box-shadow: 0 0 0 0 rgba(63,133,135,.55);
+      animation: live-pulse 1.4s ease-out infinite;
+      flex-shrink: 0;
+    }
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: #d7f0ee; color: #1b5c5e; border-radius: 999px;
+      padding: 6px 10px; font-size: 11px; font-weight: 800; letter-spacing: .08em;
+    }
+    .live-pill i {
+      width: 8px; height: 8px; border-radius: 50%; background: #3f8587;
+      animation: live-pulse 1.4s ease-out infinite;
+    }
+    @keyframes live-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(63,133,135,.55); }
+      70% { box-shadow: 0 0 0 10px rgba(63,133,135,0); }
+      100% { box-shadow: 0 0 0 0 rgba(63,133,135,0); }
+    }
+    @keyframes live-bar {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .4; }
+    }
+    @keyframes live-glow {
+      0%, 100% { box-shadow: 0 12px 32px rgba(27,49,68,.2), 0 0 0 2px rgba(63,133,135,.28); }
+      50% { box-shadow: 0 12px 32px rgba(27,49,68,.2), 0 0 0 5px rgba(63,133,135,.18); }
+    }
+    .track-bar {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 24px); max-width: 406px;
+      bottom: calc(12px + var(--safe-b));
+      background: #fff; color: var(--navy); border-radius: 16px;
+      min-height: 56px; padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 12px 32px rgba(27,49,68,.2); z-index: 28; border: 1px solid var(--teal);
+      animation: live-glow 2s ease-in-out infinite;
+    }
+    .track-bar[hidden] { display: none; }
+    .track-bar small { display: block; font-size: 11px; color: var(--muted); font-weight: 700; }
+    .phone.has-track { padding-bottom: calc(160px + var(--safe-b)); }
+    @media (prefers-reduced-motion: reduce) {
+      .pulse, .live-pill i, .step.on i, .track-bar { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <section class="hero">
+      <img class="hero-pic" src="photos/hero.jpg?v=20260928fairway" alt="Punta Espada Golf, Cap Cana" />
+      <div class="hero-fade"></div>
+      <div class="hero-copy">
+        <img class="mark" src="logo.png?v=20260901pe1" alt="Punta Espada Snack &amp; Bar" width="52" height="52" />
+        <div>
+          <h1>Snack &amp; Bar</h1>
+          <div class="kicker">Players Menu</div>
+        </div>
+      </div>
+    </section>
+    <header class="top">
+      <img class="mark-mini" src="logo.png?v=20260901pe1" alt="" width="36" height="36" />
+      <div class="chips" id="chips"></div>
+    </header>
+    <main class="list" id="list"></main>
+    <button class="bar" id="bar" hidden type="button">
+      <span id="bar-left">Cart</span>
+      <strong id="bar-total">$0</strong>
+    </button>
+    <button class="track-bar" id="track-bar" hidden type="button">
+      <span><small id="track-kicker">Your order</small><strong id="track-label">Preparing</strong></span>
+      <span class="live-pill" id="track-id"><i></i> Preparing</span>
+    </button>
+  </div>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="panel">
+      <div class="grab"></div>
+      <div id="sheet-body"></div>
+    </div>
+  </div>
+  <script src="menu.js?v=20260928snacks"></script>
+  <script src="app.js?v=20260928fairway"></script>
+</body>
+</html>

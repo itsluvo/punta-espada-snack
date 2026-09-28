@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b3144" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Oficina Punta Espada" />
+  <title>Oficina · Punta Espada</title>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #1b3144;
+      --teal: #3f8587;
+      --paper: #eef1ed;
+      --card: #fffcf8;
+      --ink: #1c2a32;
+      --muted: #6a7780;
+      --line: #e2ddd3;
+      --tap: 52px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; min-height: 100%; background: var(--paper); }
+    body { font-family: Inter, system-ui, sans-serif; color: var(--ink); }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    #board { max-width: 860px; margin: 0 auto; min-height: 100dvh; background: var(--paper); }
+    header.app {
+      background: var(--navy); color: #fff;
+      padding: max(18px, env(safe-area-inset-top)) 24px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    header.app .brand { display: flex; align-items: center; gap: 12px; }
+    header.app img { width: 48px; height: 48px; border-radius: 50%; background: #fff; object-fit: cover; }
+    header.app h1 { font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 28px; margin: 0; font-weight: 600; }
+    header.app .when { font-size: 13px; font-weight: 600; color: #b7d6d4; text-align: right; line-height: 1.35; text-transform: capitalize; max-width: 42vw; }
+    .head-right { display: flex; align-items: center; gap: 8px; }
+    .menu-btn {
+      width: 44px; height: 44px; border: 0; background: transparent;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; flex-shrink: 0;
+    }
+    .menu-btn span { display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px; }
+    .drawer { position: fixed; inset: 0; z-index: 80; }
+    .drawer[hidden] { display: none; }
+    .drawer-bg { position: absolute; inset: 0; background: rgba(18,32,44,.45); }
+    .drawer-panel {
+      position: absolute; top: 0; right: 0; height: 100%; width: min(320px, 86vw);
+      background: #fff; padding: max(22px, env(safe-area-inset-top)) 18px 24px;
+      box-shadow: -12px 0 40px rgba(0,0,0,.18);
+    }
+    .drawer-panel h4 { margin: 0 0 16px; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 28px; color: var(--navy); }
+    .drawer-panel button {
+      width: 100%; min-height: 52px; margin-bottom: 8px; border: 1px solid var(--line);
+      background: var(--card); border-radius: 14px; font-weight: 800; color: var(--navy); text-align: left; padding: 0 16px;
+    }
+    .drawer-panel button.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .day-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 14px 0; border-bottom: 1px solid #eee8de; width: 100%; background: transparent; border-left: 0; border-right: 0; border-radius: 0; min-height: 56px;
+    }
+    .day-row .d { font-weight: 800; color: var(--navy); text-align: left; min-width: 0; flex: 1; }
+    .day-row .v { font-weight: 800; color: var(--navy); flex-shrink: 0; font-size: 15px; font-variant-numeric: tabular-nums; }
+    .day-row .m { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+    .week-block { border-bottom: 1px solid #eee8de; }
+    .week-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      width: 100%; min-height: 58px; padding: 12px 0; border: 0; background: transparent;
+      color: var(--navy); font-weight: 800; text-align: left;
+    }
+    .week-head .d { font-size: 16px; min-width: 0; flex: 1; }
+    .week-head .m { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); font-weight: 600; }
+    .week-head .v { font-size: 15px; white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .week-days { padding: 0 0 8px 10px; }
+    .week-days .day-row { min-height: 52px; }
+    .secs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 0 0 16px; }
+    .secs .kpi .n { font-size: 15px; }
+    .mix {
+      display: flex; height: 18px; border-radius: 99px; overflow: hidden; background: #ece7dc; margin: 10px 0 14px;
+    }
+    .mix i { display: block; height: 100%; }
+    .mix .c { background: #5a8f62; }
+    .mix .t { background: #3d6ea8; }
+    .mix .r { background: #c4a35a; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px 16px; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+    .legend b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+    .donut-wrap { display: flex; align-items: center; gap: 18px; margin: 8px 0 4px; min-width: 0; }
+    .donut {
+      width: 112px; height: 112px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+    }
+    .donut span {
+      width: 68px; height: 68px; border-radius: 50%; background: var(--card);
+      display: grid; place-items: center; text-align: center;
+      font-size: 12px; font-weight: 800; color: var(--navy); line-height: 1.15;
+    }
+    .legend { min-width: 0; }
+    .legend span { overflow-wrap: anywhere; }
+    .bars-month { display: flex; align-items: flex-end; gap: 3px; height: 120px; margin-top: 8px; }
+    .bars-month .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; border: 0; background: transparent; padding: 0; }
+    .bars-month .col i {
+      width: 100%; max-width: 10px; border-radius: 4px 4px 1px 1px; background: var(--teal); min-height: 3px;
+    }
+    .bars-month .col i.off { background: #e4dfd4; min-height: 3px; }
+    .bars-month .col em { font-size: 8px; font-style: normal; font-weight: 700; color: var(--muted); margin-top: 4px; }
+    .kpis.three { grid-template-columns: 1fr 1fr 1fr; }
+    .kpi.tip { background: #f7f1e4; border-color: #e4d4b0; }
+    .kpi.out { background: #f8ecea; border-color: #e8cfc9; }
+    .kpi.out .n { color: #8a2b22; }
+    .tabs {
+      display: flex; gap: 4px; margin: 18px 20px 0; padding: 4px;
+      background: #e4e8e3; border-radius: 16px;
+    }
+    .tab {
+      flex: 1; min-height: 48px; border: 0; background: transparent;
+      border-radius: 12px; font-weight: 800; font-size: 15px; color: var(--navy);
+    }
+    .tab.on { background: #fff; color: var(--navy); box-shadow: 0 4px 14px rgba(27,49,68,.08); }
+    .conta-tabs {
+      display: flex; gap: 4px; margin: 0 0 14px; padding: 4px;
+      background: #e4e8e3; border-radius: 16px;
+    }
+    .conta-tab {
+      flex: 1 1 0; min-width: 0; min-height: 48px; border: 0; background: transparent;
+      border-radius: 12px; font-weight: 800; font-size: 12px; line-height: 1.15;
+      color: var(--navy); padding: 6px 3px;
+    }
+    .conta-tab.on { background: #fff; color: var(--navy); box-shadow: 0 4px 14px rgba(27,49,68,.08); }
+    .hero-num.gain { background: #1e4a38; }
+    .hero-num.gain .k, .hero-num.gain p { color: #c9e6d4; }
+    .gasto-note { margin: -4px 0 14px; color: var(--muted); font-size: 13px; font-weight: 600; line-height: 1.4; }
+    @media (max-width: 380px) {
+      .conta-tab { font-size: 11px; padding: 6px 2px; }
+    }
+    .range { display: flex; gap: 8px; padding: 14px 20px 0; }
+    .chip {
+      min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
+      background: #fff; font-weight: 700; color: var(--navy); font-size: 14px;
+    }
+    .chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .pad { padding: 16px 20px 32px; }
+    .hero-num {
+      background: var(--navy); color: #fff; border-radius: 20px; padding: 22px 24px; margin-bottom: 14px;
+    }
+    .hero-num .k { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #b7d6d4; font-weight: 800; }
+    .hero-num .n { font-size: clamp(30px, 8.5vw, 46px); font-weight: 800; letter-spacing: -.03em; line-height: 1.05; margin: 8px 0 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .hero-num .usd { font-size: .42em; letter-spacing: .12em; font-weight: 800; margin-left: 6px; vertical-align: .35em; }
+    .hero-num p { margin: 0; color: #b7d6d4; font-weight: 600; font-size: 14px; }
+    .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; min-width: 0; }
+    .kpi .k { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .kpi .n { font-size: clamp(20px, 5.4vw, 28px); font-weight: 800; color: var(--navy); margin-top: 6px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.15; }
+    .kpi.big .n { font-size: clamp(18px, 5.2vw, 26px); white-space: nowrap; letter-spacing: -0.03em; }
+    .kpi.cash { background: #f3f7f1; border-color: #d5e4d0; }
+    .kpi.cardpay { background: #f2f5f9; border-color: #d3dde9; }
+    .caja { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 20px 0; }
+    .caja .kpi { margin: 0; }
+    .caja .n { font-size: 24px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px; margin-bottom: 16px; overflow: hidden; }
+    .card h2 { margin: 0 0 16px; font-size: 15px; color: var(--navy); letter-spacing: .04em; text-transform: uppercase; }
+    .hbar { display: grid; grid-template-columns: 1fr 120px 70px; gap: 10px; align-items: center; margin: 12px 0; }
+    .hbar .name { font-weight: 700; font-size: 14px; }
+    .hbar .track { height: 10px; background: #ece7dc; border-radius: 99px; overflow: hidden; }
+    .hbar .track i { display: block; height: 100%; background: var(--teal); border-radius: 99px; }
+    .hbar .qty { text-align: right; font-weight: 800; color: var(--navy); font-size: 13px; }
+    .vbars { display: flex; align-items: flex-end; gap: 6px; height: 148px; }
+    .vcol { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+    .vfill { width: 100%; max-width: 22px; background: var(--teal); border-radius: 8px 8px 2px 2px; min-height: 4px; }
+    .vcol span { font-size: 10px; font-weight: 700; color: var(--muted); margin-top: 6px; }
+    .ticket {
+      border: 1px solid var(--line); border-radius: 18px; padding: 16px 16px 14px;
+      margin-bottom: 12px; background: #fff;
+    }
+    .ticket.new {
+      border-color: #c5ddd9;
+      background: linear-gradient(180deg, #f7fbfa 0%, #fff 40%);
+    }
+    .ticket.closed { opacity: .92; }
+    .ticket-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .pulse {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: #3f8587; margin-right: 7px; vertical-align: 1px;
+      box-shadow: 0 0 0 0 rgba(63,133,135,.55);
+      animation: live-pulse 1.4s ease-out infinite;
+    }
+    @keyframes live-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(63,133,135,.55); }
+      70% { box-shadow: 0 0 0 10px rgba(63,133,135,0); }
+      100% { box-shadow: 0 0 0 0 rgba(63,133,135,0); }
+    }
+    @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+    @media (max-width: 560px) {
+      .pad { padding: 14px 14px 28px; }
+      header.app { padding-left: 16px; padding-right: 12px; }
+      header.app h1 { font-size: 24px; }
+      .hero-num { padding: 18px 16px; }
+      .donut-wrap { gap: 12px; }
+      .legend { gap: 8px 12px; }
+      .card { padding: 16px 14px; }
+      .kpis { gap: 10px; }
+      .kpi { padding: 14px 12px; }
+    }
+    .loc { font-size: 17px; font-weight: 800; color: var(--navy); line-height: 1.25; }
+    .meta { font-size: 13px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+    .ticket ul { margin: 12px 0 0; padding: 0; list-style: none; font-size: 15px; }
+    .ticket li { padding: 6px 0; border-top: 1px solid #f0ebe3; color: var(--ink); }
+    .ticket li:first-child { border-top: 0; }
+    .ticket-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding-top: 14px; border-top: 1px solid #f0ebe3; }
+    .amt { font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: -.02em; }
+    .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .btns button, .ticket-foot .ok {
+      min-height: var(--tap); padding: 0 22px; border: 0; border-radius: 14px; font-weight: 800; font-size: 16px;
+    }
+    .go { background: var(--navy); color: #fff; }
+    .ok {
+      background: var(--teal); color: #fff;
+      box-shadow: 0 6px 16px rgba(63,133,135,.35);
+    }
+    .ticket-foot .ok {
+      min-width: 168px;
+      height: 52px;
+      border-radius: 14px;
+      letter-spacing: .02em;
+    }
+    .ticket-foot .ok:active, .btns .ok:active, .btns .go:active { transform: scale(.98); opacity: .92; }
+    .no { background: #eee; color: var(--navy); }
+    .st {
+      display: inline-flex; align-items: center; flex-shrink: 0;
+      padding: 7px 12px; border-radius: 999px; font-size: 12px; font-weight: 800;
+      background: #ece7dc; color: var(--navy); white-space: nowrap;
+    }
+    .st.new { background: #dceeea; color: #1b5c5e; }
+    .st.cash { background: #e1eedd; color: #2d5a28; }
+    .st.card { background: #dce8f8; color: #1b3144; }
+    .st.done { background: #ece7dc; color: var(--navy); }
+    .pay-q { margin: 14px 0 8px; font-weight: 800; color: var(--navy); font-size: 15px; }
+    .btns.pay button { flex: 1; }
+    #login { max-width: 430px; margin: 0 auto; }
+    .login-hero { position: relative; height: 220px; overflow: hidden; background: var(--navy); }
+    .login-hero img.bg { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .login-hero .fade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 20%, var(--paper) 100%); }
+    .login-body { padding: 0 24px 40px; margin-top: -56px; position: relative; }
+    #login img.logo { width: 96px; height: 96px; border-radius: 50%; display: block; margin: 0 auto 12px; background: #fff; }
+    #login h1 { text-align: center; color: var(--navy); font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 34px; margin: 0; }
+    #login p { text-align: center; color: var(--muted); font-size: 16px; }
+    #pin { width: 100%; min-height: 56px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); font-size: 22px; letter-spacing: .3em; text-align: center; }
+    .empty { color: var(--muted); font-weight: 600; padding: 12px 0; }
+    .cierre-btn {
+      display: block; width: 100%; margin: 8px 0 0; min-height: 54px;
+      border: 0; border-radius: 14px; background: var(--navy); color: #fff;
+      font-family: inherit; font-weight: 700; font-size: 16px; letter-spacing: .01em;
+      box-shadow: none;
+    }
+    .cierre-btn:active { transform: scale(.99); opacity: .94; }
+    .foto-card .cierre-btn { margin-top: 16px; }
+    .saved {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(20, 17, 15, .42);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .saved[hidden] { display: none; }
+    .saved-mark {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: #2f7d4a; color: #fff;
+      display: grid; place-items: center;
+      font-size: 52px; line-height: 1;
+      animation: saved-pop .35s ease;
+    }
+    .saved p { margin: 14px 0 0; color: #fff; font-weight: 700; font-size: 18px; }
+    @keyframes saved-pop {
+      from { transform: scale(.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .foto-card p { margin: 6px 0 0; color: var(--muted); font-size: 15px; font-weight: 600; line-height: 1.4; }
+    .foto-card .btns button { flex: 1; min-width: 140px; }
+    .foto-read { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .foto-read h3 { margin: 0 0 8px; font-size: 18px; color: var(--navy); }
+    .foto-read .aviso { background: #f4efe2; color: var(--navy); border-radius: 12px; padding: 10px 12px; font-size: 14px; font-weight: 700; margin: 8px 0; }
+    .foto-read input[type="date"] { width: 168px; }
+    .paper {
+      background: #fff; border: 1px solid var(--line); border-radius: 20px;
+      padding: 22px 20px 24px; box-shadow: 0 10px 30px rgba(27,49,68,.06);
+    }
+    .paper-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+    .paper-head .brand-k { font-size: 11px; letter-spacing: .16em; font-weight: 800; color: var(--teal); }
+    .paper-head h3 { margin: 4px 0 0; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 26px; color: var(--navy); font-weight: 600; }
+    .paper-date { text-align: right; font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .08em; }
+    .paper-date strong { display: block; font-size: 22px; color: var(--navy); margin-top: 4px; letter-spacing: 0; }
+    .pline { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eee8de; }
+    .pline .lab { min-width: 0; flex: 1; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); line-height: 1.25; }
+    .pline .lab small { display: block; margin-top: 3px; letter-spacing: 0; text-transform: none; font-weight: 700; font-size: 12px; color: #8a8074; }
+    .pline .val { flex-shrink: 0; max-width: 58%; font-size: clamp(16px, 4.8vw, 22px); font-weight: 800; color: var(--navy); letter-spacing: -.02em; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .pline.total { border-bottom: 2px solid var(--navy); }
+    .pline.staff .val, .pline.out .val { color: #8a2b22; }
+    .pline input {
+      width: 140px; min-height: 44px; text-align: right; font-weight: 800; font-size: 18px;
+      border: 0; border-bottom: 2px solid var(--line); border-radius: 0; background: transparent; padding: 6px 0;
+    }
+    .pline .note {
+      width: 100%; margin-top: 8px; min-height: 44px; border: 1px solid var(--line);
+      border-radius: 12px; padding: 10px 12px; font-size: 15px; font-weight: 600;
+    }
+    .sign { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 22px; }
+    .sign label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--muted); margin-bottom: 8px; }
+    .sign input { width: 100%; min-height: 48px; border: 0; border-bottom: 2px solid var(--navy); border-radius: 0; background: transparent; font-weight: 700; }
+    .day-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    .day-nav button { min-width: 48px; min-height: 44px; border: 1px solid var(--line); background: #fff; border-radius: 12px; font-weight: 800; color: var(--navy); }
+    .cierre-sheet { background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 18px 16px 20px; box-shadow: 0 10px 28px rgba(27,49,68,.06); }
+    .cierre-sheet h3 { margin: 0 0 4px; font-family: "Cormorant Garamond", serif; font-style: italic; font-size: 30px; color: var(--navy); font-weight: 600; }
+    .cierre-sheet .lead { margin: 0 0 16px; color: var(--muted); font-size: 14px; font-weight: 600; }
+    .cfield { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .cfield label { font-size: 13px; font-weight: 800; color: var(--navy); }
+    .cfield input {
+      width: 100%; min-height: 52px; border: 1px solid var(--line); border-radius: 14px;
+      background: #f7f4ee; padding: 12px 14px; font-size: 18px; font-weight: 700; color: var(--ink);
+    }
+    .cfield input[type="date"] { font-size: 17px; }
+    .cierre-sum { background: #f4efe6; border-radius: 16px; padding: 4px 14px; margin: 6px 0 16px; }
+    .cierre-sum .pline { border-bottom-color: #e6dfd2; }
+    .cierre-sum .pline:last-child { border-bottom: 0; }
+    @media (max-width: 640px) {
+      .hero-num .n { font-size: 40px; }
+      .hbar { grid-template-columns: 1fr 90px 56px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="login" hidden>
+    <div class="login-hero">
+      <img class="bg" src="photos/hero.jpg?v=20260928fairway" alt="" />
+      <div class="fade"></div>
+    </div>
+    <div class="login-body">
+      <img class="logo" src="logo.png?v=20260901pe1" alt="Punta Espada" />
+      <div style="letter-spacing:.16em;font-size:11px;font-weight:700;color:#3f8587;text-align:center">CAP CANA</div>
+      <h1>Oficina</h1>
+      <p>Pon la clave para entrar.</p>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="off" />
+      <button class="go" style="width:100%;margin-top:12px;min-height:56px;border:0;border-radius:14px;font-weight:800" id="enter">Entrar</button>
+      <button type="button" class="no" id="login-back" style="width:100%;margin-top:10px;min-height:48px;border:0;border-radius:14px;font-weight:800">← Pedidos</button>
+    </div>
+  </div>
+
+  <div id="board">
+    <header class="app">
+      <div class="brand">
+        <img src="logo.png?v=20260901pe1" alt="" />
+        <div>
+          <div style="font-size:11px;letter-spacing:.16em;font-weight:800;color:#8ec4c4">PUNTA ESPADA</div>
+          <h1>Oficina</h1>
+        </div>
+      </div>
+      <div class="head-right">
+        <div class="when" id="when"></div>
+        <button type="button" class="menu-btn" id="menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
+      </div>
+    </header>
+    <div class="drawer" id="drawer" hidden>
+      <div class="drawer-bg" id="drawer-bg"></div>
+      <div class="drawer-panel">
+        <h4>Menú</h4>
+        <button type="button" data-go="conta">Oficina</button>
+      </div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-tab="pedidos">Pedidos</button>
+      <button class="tab" data-tab="hoy">Ventas</button>
+    </div>
+    <div class="caja" id="caja"></div>
+    <div class="range" id="range" style="display:none">
+      <button class="chip on" data-range="hoy">Hoy</button>
+      <button class="chip" data-range="semana">7 días</button>
+      <button class="chip" data-range="mes">Mes</button>
+    </div>
+    <div class="pad" id="view"></div>
+    <input id="foto-cam-in" type="file" accept="image/*" capture="environment" hidden />
+    <input id="foto-gal-in" type="file" accept="image/*" multiple hidden />
+  </div>
+
+  <script>
+    const TZ = "America/Santo_Domingo";
+    const ST = {
+      new: "Nuevo",
+      preparing: "Preparando",
+      ready: "En camino",
+      done: "Entregado",
+      cancelled: "Cancelado",
+    };
+    let token = sessionStorage.getItem("golf-office") || sessionStorage.getItem("golf-kit") || "";
+    let tab = "pedidos";
+    let range = "hoy";
+    let orders = [];
+    let seenNew = new Set();
+    let payingId = "";
+    let cierres = {};
+    let cierreDay = "";
+    let cierreDraft = { tasa: "60", efectivo: "", tarjeta: "", creditos: "", creditosNota: "", propinaTC: "", entregado: "", recibido: "" };
+    let contaMonth = "";
+    let contaTab = "ventas";
+    let openWeek = "";
+    let fotoReads = [];
+    let fotoBusy = false;
+    let fotoTarget = "conta";
+    let fotoAviso = "";
+    let cierreFromFoto = false;
+    const PAY = { cash: "Efectivo", card: "Tarjeta" };
+    function locEs(o) {
+      const course = o.course || "";
+      const cart = o.golfCart ? "Carrito " + o.golfCart : "";
+      if (o.hole) return [course, "Hoyo " + o.hole, cart].filter(Boolean).join(" · ");
+      return String(o.location || "—")
+        .replace(/\bHole\b/g, "Hoyo")
+        .replace(/\bCart\b/g, "Carrito")
+        .replace(/\bHalfway house\b/g, "Casa de medio")
+        .replace(/\bClubhouse\b/g, "Clubhouse");
+    }
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => {
+      const x = Math.round(Number(n) * 100) / 100;
+      return "$" + x.toFixed(2).replace(/\.00$/, "");
+    };
+    const dayKey = (ts) => new Date(ts).toLocaleDateString("en-CA", { timeZone: TZ });
+    const todayKey = () => dayKey(Date.now());
+    const hourLabel = (ts) => {
+      const parts = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", hour12: false }).formatToParts(new Date(ts));
+      return +(parts.find((p) => p.type === "hour") || {}).value || 0;
+    };
+
+    function inRange(o) {
+      const ts = o.ts || 0;
+      const key = dayKey(ts);
+      const today = todayKey();
+      if (range === "hoy") return key === today;
+      const t = new Date(today + "T12:00:00");
+      const d = new Date(key + "T12:00:00");
+      const days = (t - d) / 86400000;
+      if (range === "semana") return days >= 0 && days < 7;
+      if (range === "mes") return days >= 0 && days < 31;
+      return true;
+    }
+    const sold = (list) => list.filter((o) => o.status !== "cancelled");
+    const paid = (list) => list.filter((o) => o.status === "done" && (o.pay === "cash" || o.pay === "card"));
+    const sum = (list) => list.reduce((s, o) => s + Number(o.total || 0), 0);
+    function splitPay(list) {
+      const p = paid(list);
+      const cashL = p.filter((o) => o.pay === "cash");
+      const cardL = p.filter((o) => o.pay === "card");
+      return {
+        cash: sum(cashL), card: sum(cardL), total: sum(p),
+        nCash: cashL.length, nCard: cardL.length, n: p.length,
+      };
+    }
+
+    function beep() {
+      try {
+        const c = new (window.AudioContext || window.webkitAudioContext)();
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.type = "sine"; o.frequency.value = 880;
+        g.gain.value = 0.08;
+        o.connect(g); g.connect(c.destination);
+        o.start(); o.stop(c.currentTime + 0.18);
+      } catch (_) {}
+    }
+
+    async function login() {
+      const res = await fetch("/api/cashier/login", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: $("pin").value }),
+      });
+      if (!res.ok) { alert("Clave incorrecta"); return; }
+      const d = await res.json();
+      token = d.token;
+      sessionStorage.setItem("golf-office", token);
+      $("pin").value = "";
+      $("login").hidden = true;
+      $("board").hidden = false;
+      contaMonth = todayKey().slice(0, 7);
+      contaTab = "ventas";
+      tab = "conta";
+      load();
+    }
+
+    async function load() {
+      const res = await fetch("/api/orders");
+      if (!res.ok) return;
+      const data = await res.json();
+      const next = data.orders || [];
+      const news = next.filter((o) => o.status === "new").map((o) => o.id);
+      if (seenNew.size && news.some((id) => !seenNew.has(id))) beep();
+      news.forEach((id) => seenNew.add(id));
+      orders = next;
+      if (token) {
+        try {
+          const c = await fetch("/api/cierres", { headers: { Authorization: "Bearer " + token } });
+          if (c.status === 401) {
+            token = "";
+            sessionStorage.removeItem("golf-office");
+            if (tab === "conta") {
+              $("login").hidden = false;
+              $("board").hidden = true;
+            }
+            return;
+          }
+          if (c.ok) cierres = (await c.json()).cierres || {};
+        } catch (_) {}
+      }
+      const typingFoto = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fotoI != null;
+      if (fotoBusy || typingFoto) return;
+      render();
+    }
+
+    async function setStatus(id, st, pay) {
+      const body = { status: st };
+      if (pay) body.pay = pay;
+      await fetch("/api/order/" + id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify(body),
+      });
+      payingId = "";
+      load();
+    }
+
+    function render() {
+      const now = new Date();
+      $("when").innerHTML = now.toLocaleDateString("es-DO", { weekday: "long", day: "numeric", month: "long", timeZone: TZ }) +
+        "<br>" + now.toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+      const todayPay = splitPay(sold(orders.filter((o) => dayKey(o.ts || 0) === todayKey())));
+      $("caja").innerHTML = `
+        <div class="kpi cash"><div class="k">Hoy efectivo</div><div class="n">${money(todayPay.cash)}</div></div>
+        <div class="kpi cardpay"><div class="k">Hoy tarjeta</div><div class="n">${money(todayPay.card)}</div></div>`;
+      $("tabs").style.display = tab === "conta" ? "none" : "flex";
+      $("caja").style.display = tab === "conta" ? "none" : "grid";
+      $("range").style.display = tab === "hoy" ? "flex" : "none";
+      if (tab === "hoy") renderHoy();
+      else if (tab === "conta") {
+        if (contaTab === "subir") renderCierre();
+        else renderConta();
+      }
+      else renderPedidos();
+    }
+
+    function renderHoy() {
+      const list = sold(orders.filter(inRange));
+      const pay = splitPay(list);
+      const sales = pay.total;
+      const tax = paid(list).reduce((s, o) => s + Number(o.tax || 0), 0);
+      const cash = pay.cash;
+      const card = pay.card;
+      const n = pay.n;
+      const avg = n ? sales / n : 0;
+      const products = {};
+      list.forEach((o) => (o.items || []).forEach((it) => {
+        const name = it.name || it.id || "Ítem";
+        if (!products[name]) products[name] = { name, qty: 0, money: 0 };
+        products[name].qty += Number(it.qty || 0);
+        products[name].money += Number(it.price || 0) * Number(it.qty || 0);
+      }));
+      const top = Object.values(products).sort((a, b) => b.qty - a.qty).slice(0, 8);
+      const maxQ = Math.max(1, ...top.map((p) => p.qty));
+      const hours = {};
+      for (let h = 6; h <= 18; h++) hours[h] = 0;
+      list.forEach((o) => {
+        const h = hourLabel(o.ts || 0);
+        if (hours[h] == null) hours[h] = 0;
+        hours[h] += Number(o.total || 0);
+      });
+      const keys = Object.keys(hours).map(Number).sort((a, b) => a - b);
+      const maxH = Math.max(1, ...keys.map((k) => hours[k]));
+      const title = range === "hoy" ? "Hoy vendiste" : range === "semana" ? "En 7 días" : "Este mes";
+      const topName = top[0] ? top[0].name : "Todavía no hay ventas";
+
+      $("view").innerHTML = `
+        <div class="kpis" style="margin-top:4px">
+          <div class="kpi big cash">
+            <div class="k">Efectivo</div>
+            <div class="n">${money(cash)}</div>
+            <p class="empty" style="margin:6px 0 0">${pay.nCash} pagado${pay.nCash === 1 ? "" : "s"}</p>
+          </div>
+          <div class="kpi big cardpay">
+            <div class="k">Tarjeta</div>
+            <div class="n">${money(card)}</div>
+            <p class="empty" style="margin:6px 0 0">${pay.nCard} pagado${pay.nCard === 1 ? "" : "s"}</p>
+          </div>
+        </div>
+        <div class="hero-num">
+          <div class="k">${title} · total</div>
+          <div class="n">${money(sales)} <span class="usd">USD</span></div>
+          <p>${n} pagado${n === 1 ? "" : "s"} · tax 18% ${money(tax)} · promedio ${money(avg)}</p>
+        </div>
+        ${list.some((o) => o.demo) ? `<p class="gasto-note">Players Menu de ejemplo. Cerca del 20% de la venta de cada día, a 60 pesos por dólar.</p>` : ""}
+        <div class="card">
+          <h2>Lo que más está saliendo</h2>
+          ${top.length ? top.map((p) => `
+            <div class="hbar">
+              <div class="name">${p.name}</div>
+              <div class="track"><i style="width:${Math.round(p.qty / maxQ * 100)}%"></i></div>
+              <div class="qty">${p.qty} · ${money(p.money)}</div>
+            </div>`).join("") : `<p class="empty">Cuando entren pedidos, aquí se ve el ranking.</p>`}
+          ${top[0] ? `<p class="empty" style="margin:10px 0 0">El más pedido: <strong>${topName}</strong></p>` : ""}
+        </div>
+        <div class="card">
+          <h2>${range === "hoy" ? "Ventas por hora" : "Ventas por día"}</h2>
+          ${range === "hoy" ? `
+            <div class="vbars">${keys.map((h) => `
+              <div class="vcol">
+                <div class="vfill" style="height:${Math.max(6, Math.round(hours[h] / maxH * 140))}px"></div>
+                <span>${h}</span>
+              </div>`).join("")}</div>
+          ` : weekBars(list)}
+        </div>
+      `;
+    }
+
+    function weekBars(list) {
+      const days = {};
+      list.forEach((o) => {
+        const k = dayKey(o.ts || 0);
+        days[k] = (days[k] || 0) + Number(o.total || 0);
+      });
+      const today = todayKey();
+      const keys = [];
+      const [yy, mm, dd] = today.split("-").map(Number);
+      for (let i = (range === "mes" ? 30 : 6); i >= 0; i--) {
+        const d = new Date(Date.UTC(yy, mm - 1, dd - i));
+        keys.push(d.toISOString().slice(0, 10));
+      }
+      const max = Math.max(1, ...keys.map((k) => days[k] || 0));
+      return `<div class="vbars">${keys.map((k) => {
+        const lab = k.slice(8);
+        const v = days[k] || 0;
+        return `<div class="vcol"><div class="vfill" style="height:${Math.max(6, Math.round(v / max * 140))}px"></div><span>${lab}</span></div>`;
+      }).join("")}</div>`;
+    }
+
+    function paperDate(key) {
+      const [y, m, d] = (key || todayKey()).split("-");
+      return `${Number(d)} / ${Number(m)} / ${String(y).slice(2)}`;
+    }
+    function shiftDay(key, n) {
+      const [y, m, d] = key.split("-").map(Number);
+      return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+    }
+    function num(v) {
+      const x = parseFloat(String(v).replace(",", "."));
+      return Number.isFinite(x) ? x : 0;
+    }
+    function rd(n) {
+      const x = Math.round(Number(n) * 100) / 100;
+      if (Math.abs(x) < 0.005) return "—";
+      const neg = x < 0 ? "-" : "";
+      const [a, b] = Math.abs(x).toFixed(2).split(".");
+      return neg + a.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "." + b;
+    }
+    function readCierreForm() {
+      cierreDraft.tasa = ($("c-tasa") && $("c-tasa").value) || cierreDraft.tasa;
+      if ($("c-efectivo")) cierreDraft.efectivo = $("c-efectivo").value;
+      if ($("c-tarjeta")) cierreDraft.tarjeta = $("c-tarjeta").value;
+      cierreDraft.creditos = ($("c-creditos") && $("c-creditos").value) || cierreDraft.creditos;
+      cierreDraft.creditosNota = ($("c-creditos-nota") && $("c-creditos-nota").value) || "";
+      cierreDraft.propinaTC = ($("c-propina") && $("c-propina").value) || cierreDraft.propinaTC;
+      cierreDraft.entregado = ($("c-entregado") && $("c-entregado").value) || "";
+      cierreDraft.recibido = ($("c-recibido") && $("c-recibido").value) || "";
+    }
+    function loadCierreDraft(day) {
+      const saved = cierres[day] || {};
+      const has = saved.tarjeta != null || saved.efectivo != null || saved.creditos || saved.propinaTC;
+      cierreDraft = {
+        tasa: saved.tasa != null ? String(saved.tasa) : (cierreDraft.tasa || "60"),
+        efectivo: has && saved.efectivo != null ? String(saved.efectivo || "") : "",
+        tarjeta: has && saved.tarjeta != null ? String(saved.tarjeta || "") : "",
+        creditos: saved.creditos ? String(saved.creditos) : "",
+        creditosNota: saved.creditosNota || "",
+        propinaTC: saved.propinaTC ? String(saved.propinaTC) : "",
+        entregado: saved.entregado || "",
+        recibido: saved.recibido || "",
+      };
+    }
+    function appDay(day) {
+      const list = sold(orders.filter((o) => dayKey(o.ts || 0) === day));
+      return splitPay(list);
+    }
+    function cierreNums(day) {
+      const pay = appDay(day);
+      const tasa = num(cierreDraft.tasa) || 60;
+      const appCash = Math.round(pay.cash * tasa * 100) / 100;
+      const appCard = Math.round(pay.card * tasa * 100) / 100;
+      const cash = cierreDraft.efectivo === "" ? appCash : num(cierreDraft.efectivo);
+      const card = cierreDraft.tarjeta === "" ? appCard : num(cierreDraft.tarjeta);
+      const creditos = num(cierreDraft.creditos);
+      const totalVenta = Math.round((cash + card + creditos) * 100) / 100;
+      const cinco = Math.round(totalVenta * 0.05 * 100) / 100;
+      const propina = num(cierreDraft.propinaTC);
+      const staff = Math.round((cinco + propina) * 100) / 100;
+      const totalEfectivo = Math.round((cash - staff) * 100) / 100;
+      const usd = tasa ? Math.round(totalEfectivo / tasa) : 0;
+      return {
+        tasa, cash, card, creditos, totalVenta, cinco, propina, staff, totalEfectivo, usd,
+        appUsd: pay.total, appCash, appCard, n: pay.n,
+      };
+    }
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function blankMoney(v) {
+      return v == null || v === "" ? "" : String(v);
+    }
+    function fotoTotals(c) {
+      const tasa = num(c.tasa) || 60;
+      const cash = c.efectivo == null || c.efectivo === "" ? 0 : num(c.efectivo);
+      const card = c.tarjeta == null || c.tarjeta === "" ? 0 : num(c.tarjeta);
+      const creditos = c.creditos == null || c.creditos === "" ? 0 : num(c.creditos);
+      const totalVenta = Math.round((cash + card + creditos) * 100) / 100;
+      const cinco = Math.round(totalVenta * 0.05 * 100) / 100;
+      const propina = c.propinaTC == null || c.propinaTC === "" ? 0 : num(c.propinaTC);
+      const staff = Math.round((cinco + propina) * 100) / 100;
+      const totalEfectivo = Math.round((cash - staff) * 100) / 100;
+      return { totalVenta, cinco, propina, staff, totalEfectivo };
+    }
+    function paintFoto(i) {
+      const item = fotoReads[i];
+      if (!item || !item.cierre) return;
+      const n = fotoTotals(item.cierre);
+      const set = (id, val) => { const el = $(id); if (el) el.textContent = rd(val); };
+      set("ft-total-" + i, n.totalVenta);
+      set("ft-cinco-" + i, n.cinco);
+      set("ft-staff-" + i, n.staff);
+      set("ft-caja-" + i, n.totalEfectivo);
+    }
+    function fileToJpeg(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const max = 1600;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("foto"));
+        };
+        img.src = url;
+      });
+    }
+    async function leerFotos(fileList) {
+      const files = [...fileList].filter(Boolean);
+      if (!files.length) return;
+      fotoBusy = true;
+      const done = [];
+      contaTab = "ventas";
+      tab = "conta";
+      for (let i = 0; i < files.length; i++) {
+        const name = files[i].name || "Foto";
+        const waiting = files.slice(i + 1).map((f) => ({ name: f.name || "Foto", status: "espera" }));
+        fotoReads = done.concat([{ name, status: "leyendo" }], waiting);
+        render();
+        let made;
+        try {
+          const image = await fileToJpeg(files[i]);
+          const res = await fetch("/api/cierre/leer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+            body: JSON.stringify({ image }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            made = [{ name, status: "error", error: data.error || "No se pudo leer esa foto." }];
+          } else {
+            const list = data.cierres || [];
+            made = list.map((item) => ({
+              name,
+              status: "listo",
+              modo: data.modo || "",
+              aviso: item.aviso || "",
+              confianza: item.confianza || "",
+              cierre: Object.assign({
+                date: "", tasa: 60, efectivo: "", tarjeta: "", creditos: "", creditosNota: "", propinaTC: "", entregado: "", recibido: "",
+              }, item.cierre || {}),
+            }));
+            if (!made.length) made = [{ name, status: "error", error: "No vi un cierre en esa foto." }];
+          }
+        } catch (_) {
+          made = [{ name, status: "error", error: "Esa foto no se abrió. Tómala de nuevo." }];
+        }
+        done.push(...made);
+      }
+      fotoReads = done;
+      fotoBusy = false;
+      if (fotoTarget === "day") {
+        const ready = fotoReads.find((r) => r.status === "listo" && r.cierre);
+        if (ready) {
+          if (ready.cierre.date) cierreDay = ready.cierre.date;
+          fotoAviso = ready.aviso || "Revisa los números y guarda el cierre.";
+          cierreDraft = {
+            tasa: blankMoney(ready.cierre.tasa) || "60",
+            efectivo: blankMoney(ready.cierre.efectivo),
+            tarjeta: blankMoney(ready.cierre.tarjeta),
+            creditos: blankMoney(ready.cierre.creditos),
+            creditosNota: ready.cierre.creditosNota || "",
+            propinaTC: blankMoney(ready.cierre.propinaTC),
+            entregado: ready.cierre.entregado || "",
+            recibido: ready.cierre.recibido || "",
+          };
+          contaTab = "subir";
+          cierreFromFoto = true;
+        }
+      }
+      render();
+    }
+    async function insertarFoto(i) {
+      const item = fotoReads[i];
+      if (!item || !item.cierre) return;
+      const c = item.cierre;
+      if (!c.date) { alert("Falta la fecha de ese cierre."); return; }
+      const res = await fetch("/api/cierre", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({
+          date: c.date,
+          tasa: num(c.tasa) || 60,
+          efectivo: num(c.efectivo),
+          tarjeta: num(c.tarjeta),
+          creditos: num(c.creditos),
+          creditosNota: String(c.creditosNota || "").trim(),
+          propinaTC: num(c.propinaTC),
+          entregado: String(c.entregado || "").trim(),
+          recibido: String(c.recibido || "").trim(),
+          origen: "foto",
+        }),
+      });
+      if (!res.ok) { alert("No se pudo guardar ese cierre."); return; }
+      cierres[c.date] = await res.json();
+      item.status = "guardado";
+      if (c.date.slice(0, 7) !== contaMonth) contaMonth = c.date.slice(0, 7);
+      render();
+    }
+    function fotoCard() {
+      const reading = fotoReads.some((r) => r.status === "leyendo" || r.status === "espera");
+      const ready = fotoReads.filter((r) => r.status === "listo");
+      const blocks = fotoReads.map((item, i) => {
+        if (item.status === "leyendo" || item.status === "espera") {
+          return `<div class="foto-read"><h3>Foto ${i + 1}</h3><p class="empty">${item.status === "leyendo" ? "Leyendo el papel…" : "En espera"}</p></div>`;
+        }
+        if (item.status === "error") {
+          return `<div class="foto-read"><h3>Foto ${i + 1}</h3><p class="aviso">${esc(item.error)}</p></div>`;
+        }
+        if (item.status === "guardado") {
+          return `<div class="foto-read"><h3>${esc(paperDate(item.cierre.date))}</h3><p class="empty">Guardado en oficina.</p></div>`;
+        }
+        const c = item.cierre;
+        const n = fotoTotals(c);
+        const ya = c.date && cierres[c.date];
+        const aviso = item.aviso || (item.modo === "local" ? "Revisa cada número contra el papel antes de guardar." : "");
+        return `<div class="foto-read">
+          <h3>Cierre leído</h3>
+          ${aviso ? `<div class="aviso">${esc(aviso)}</div>` : ""}
+          ${ya ? `<div class="aviso">Ese día ya tenía un cierre. Si lo guardas, se actualiza.</div>` : ""}
+          <div class="pline"><span class="lab">Fecha</span><input data-foto-i="${i}" data-foto-field="date" type="date" value="${esc(c.date || "")}" /></div>
+          <div class="pline"><span class="lab">Tasa USD</span><input data-foto-i="${i}" data-foto-field="tasa" inputmode="decimal" value="${esc(blankMoney(c.tasa) || "60")}" /></div>
+          <div class="pline"><span class="lab">Efectivo RD$</span><input data-foto-i="${i}" data-foto-field="efectivo" inputmode="decimal" placeholder="—" value="${esc(blankMoney(c.efectivo))}" /></div>
+          <div class="pline"><span class="lab">Tarjeta RD$</span><input data-foto-i="${i}" data-foto-field="tarjeta" inputmode="decimal" placeholder="—" value="${esc(blankMoney(c.tarjeta))}" /></div>
+          <div class="pline" style="flex-wrap:wrap"><span class="lab">Créditos RD$</span><input data-foto-i="${i}" data-foto-field="creditos" inputmode="decimal" placeholder="—" value="${esc(blankMoney(c.creditos))}" /><input class="note" data-foto-i="${i}" data-foto-field="creditosNota" placeholder="Nombre" value="${esc(c.creditosNota || "")}" /></div>
+          <div class="pline total"><span class="lab">Total venta RD$</span><span class="val" id="ft-total-${i}">${rd(n.totalVenta)}</span></div>
+          <div class="pline staff"><span class="lab">5% venta RD$</span><span class="val" id="ft-cinco-${i}">${rd(n.cinco)}</span></div>
+          <div class="pline"><span class="lab">Propina TC RD$</span><input data-foto-i="${i}" data-foto-field="propinaTC" inputmode="decimal" placeholder="—" value="${esc(blankMoney(c.propinaTC))}" /></div>
+          <div class="pline staff"><span class="lab">Total 5% / propina TC RD$</span><span class="val" id="ft-staff-${i}">${rd(n.staff)}</span></div>
+          <div class="pline out total"><span class="lab">Total efectivo RD$</span><span class="val" id="ft-caja-${i}">${rd(n.totalEfectivo)}</span></div>
+          <div class="sign">
+            <div><label>ENTREGADO</label><input data-foto-i="${i}" data-foto-field="entregado" value="${esc(c.entregado || "")}" /></div>
+            <div><label>RECIBIDO</label><input data-foto-i="${i}" data-foto-field="recibido" value="${esc(c.recibido || "")}" /></div>
+          </div>
+          <button type="button" class="ok cierre-btn" data-insert-foto="${i}">Guardar en oficina</button>
+        </div>`;
+      }).join("");
+      return `<div class="card foto-card">
+        <h2>Subir cierre</h2>
+        <p>Llena el papel: efectivo, tarjeta, créditos y propina.</p>
+        <button type="button" class="cierre-btn" data-subir-cierre="1">Subir cierre</button>
+      </div>`;
+    }
+    function paintCierre(n) {
+      if ($("v-total")) $("v-total").textContent = rd(n.totalVenta);
+      if ($("v-cinco")) $("v-cinco").textContent = rd(n.cinco);
+      if ($("v-staff")) $("v-staff").textContent = rd(n.staff);
+      if ($("v-caja")) $("v-caja").textContent = rd(n.totalEfectivo);
+      if ($("v-usd")) $("v-usd").textContent = n.usd ? "o " + n.usd + " dólares" : "";
+    }
+    function renderCierre() {
+      if (!cierreDay) cierreDay = todayKey();
+      const editingDate = document.activeElement && document.activeElement.id === "c-fecha";
+      if ($("c-creditos") && !editingDate) readCierreForm();
+      if (!editingDate && document.activeElement && $("view").contains(document.activeElement) && $("c-creditos")) {
+        paintCierre(cierreNums(cierreDay));
+        return;
+      }
+      const n = cierreNums(cierreDay);
+      $("view").innerHTML = `
+        <button type="button" class="no" data-back-ops="1" style="width:100%;margin-bottom:12px">← Pedidos</button>
+        ${contaNav()}
+        <div class="cierre-sheet">
+          <h3>Subir cierre</h3>
+          <p class="lead">Elige el día, aunque sea viejo, y llena lo del papel.</p>
+          <div class="cfield">
+            <label for="c-fecha">Fecha</label>
+            <input id="c-fecha" type="date" value="${esc(cierreDay)}" />
+          </div>
+          <div class="cfield">
+            <label for="c-tasa">Tasa del dólar</label>
+            <input id="c-tasa" inputmode="decimal" value="${cierreDraft.tasa || 60}" />
+          </div>
+          <div class="cfield">
+            <label for="c-efectivo">Efectivo RD$</label>
+            <input id="c-efectivo" inputmode="decimal" placeholder="0" value="${cierreDraft.efectivo}" />
+          </div>
+          <div class="cfield">
+            <label for="c-tarjeta">Tarjeta RD$</label>
+            <input id="c-tarjeta" inputmode="decimal" placeholder="0" value="${cierreDraft.tarjeta}" />
+          </div>
+          <div class="cfield">
+            <label for="c-creditos">Créditos RD$</label>
+            <input id="c-creditos" inputmode="decimal" placeholder="0" value="${cierreDraft.creditos}" />
+          </div>
+          <div class="cierre-sum">
+            <div class="pline"><span class="lab">Total venta</span><span class="val" id="v-total">${rd(n.totalVenta)}</span></div>
+          </div>
+          <div class="cfield">
+            <label for="c-propina">Propina de tarjeta RD$</label>
+            <input id="c-propina" inputmode="decimal" placeholder="0" value="${cierreDraft.propinaTC}" />
+          </div>
+          <div class="cierre-sum">
+            <div class="pline"><span class="lab">5% de la venta</span><span class="val" id="v-cinco">${rd(n.cinco)}</span></div>
+            <div class="pline"><span class="lab">Total propina</span><span class="val" id="v-staff">${rd(n.staff)}</span></div>
+          </div>
+          <button type="button" class="cierre-btn" data-save-cierre="1">Guardar cierre</button>
+        </div>
+      `;
+    }
+    async function saveCierre() {
+      readCierreForm();
+      const res = await fetch("/api/cierre", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({
+          date: cierreDay,
+          tasa: num(cierreDraft.tasa) || 60,
+          efectivo: num(cierreDraft.efectivo),
+          tarjeta: num(cierreDraft.tarjeta),
+          creditos: num(cierreDraft.creditos),
+          creditosNota: cierreDraft.creditosNota.trim(),
+          propinaTC: num(cierreDraft.propinaTC),
+          entregado: cierreDraft.entregado.trim(),
+          recibido: cierreDraft.recibido.trim(),
+          origen: cierreFromFoto ? "foto" : "",
+        }),
+      });
+      if (!res.ok) { alert("No se pudo guardar"); return; }
+      cierres[cierreDay] = await res.json();
+      contaMonth = (cierreDay || todayKey()).slice(0, 7);
+      await showSaved();
+      contaTab = "ventas";
+      render();
+    }
+    function showSaved() {
+      let el = document.getElementById("saved");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "saved";
+        el.className = "saved";
+        el.hidden = true;
+        el.innerHTML = '<div class="saved-mark">✓</div><p>Cierre guardado</p>';
+        document.body.appendChild(el);
+      }
+      el.hidden = false;
+      return new Promise((resolve) => {
+        setTimeout(() => { el.hidden = true; resolve(); }, 900);
+      });
+    }
+
+    function monthKeys(ym) {
+      const [y, m] = ym.split("-").map(Number);
+      const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+      const keys = [];
+      for (let d = 1; d <= last; d++) keys.push(`${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
+      return keys;
+    }
+    function weekDayEs(key) {
+      const [y, m, d] = key.split("-").map(Number);
+      const n = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("es-DO", { weekday: "short", timeZone: "UTC" });
+      return n.replace(".", "");
+    }
+    function weeksOf(mes) {
+      const groups = [];
+      mes.forEach((d) => {
+        const [y, m, day] = d.k.split("-").map(Number);
+        const dt = new Date(Date.UTC(y, m - 1, day));
+        const wd = dt.getUTCDay();
+        const back = wd === 0 ? 6 : wd - 1;
+        const start = new Date(dt);
+        start.setUTCDate(dt.getUTCDate() - back);
+        const id = start.toISOString().slice(0, 10);
+        let g = groups.find((x) => x.id === id);
+        if (!g) { g = { id, days: [], venta: 0 }; groups.push(g); }
+        g.days.push(d);
+        g.venta += d.venta;
+      });
+      groups.forEach((g) => {
+        const a = Number(g.days[0].k.slice(8));
+        const b = Number(g.days[g.days.length - 1].k.slice(8));
+        g.label = a === b ? `${a} sep` : `${a}–${b} sep`;
+      });
+      return groups;
+    }
+    function monthName(ym) {
+      const [y, m] = ym.split("-").map(Number);
+      const n = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("es-DO", { month: "long", year: "numeric", timeZone: "UTC" });
+      return n.charAt(0).toUpperCase() + n.slice(1);
+    }
+    function contaNav() {
+      const items = [
+        ["subir", "Subir cierres"],
+        ["ventas", "Ventas"],
+        ["gastos", "Gastos"],
+        ["beneficios", "Beneficios"],
+      ];
+      return `<div class="conta-tabs" role="tablist">${items.map(([id, label]) =>
+        `<button type="button" class="conta-tab${contaTab === id ? " on" : ""}" data-conta-tab="${id}" role="tab">${label}</button>`
+      ).join("")}</div>`;
+    }
+    function tasaTxt(t) {
+      const n = Math.round(Number(t) * 100) / 100;
+      return Number.isInteger(n) ? String(n) : String(n);
+    }
+    function fixedOf(mes, venta) {
+      let tasa = 60;
+      let fromCierres = false;
+      for (let i = mes.length - 1; i >= 0; i--) {
+        const t = num(mes[i].saved && mes[i].saved.tasa);
+        if (t) { tasa = t; fromCierres = true; break; }
+      }
+      const carrito = Math.round(1500 * tasa * 100) / 100;
+      const local = Math.round(2000 * tasa * 100) / 100;
+      const nomina = 250000;
+      const fijos = Math.round((nomina + carrito + local) * 100) / 100;
+      const super_ = Math.round(Number(venta) * 33) / 100;
+      const itbis = Math.round(Number(venta) * 18) / 100;
+      return {
+        tasa, nomina, carrito, local, fijos, super: super_, itbis, fromCierres,
+        total: Math.round((fijos + super_ + itbis) * 100) / 100,
+      };
+    }
+    function ejemploNote(mes) {
+      const reales = mes.filter((d) => (d.saved.origen || "") !== "simulado");
+      const ejemplo = mes.length - reales.length;
+      if (!ejemplo) return "";
+      const fechas = reales.map((d) => paperDate(d.k)).join(", ");
+      const dias = `${ejemplo} día${ejemplo === 1 ? "" : "s"} de ejemplo`;
+      return `<p class="gasto-note">${fechas ? `${dias}. Cierre guardado: ${fechas}.` : `${dias}.`}</p>`;
+    }
+    function renderConta() {
+      if (!contaMonth) contaMonth = todayKey().slice(0, 7);
+      const keys = monthKeys(contaMonth);
+      const days = keys.map((k) => {
+        const saved = cierres[k] || {};
+        const has = saved.tarjeta != null || saved.efectivo != null || saved.creditos || saved.propinaTC;
+        let venta = 0;
+        if (has) venta = Number(saved.efectivo || 0) + Number(saved.tarjeta || 0) + Number(saved.creditos || 0);
+        return { k, has, venta, saved };
+      });
+      const mes = days.filter((d) => d.has);
+      const venta = mes.reduce((s, d) => s + d.venta, 0);
+      const tarjeta = mes.reduce((s, d) => s + Number(d.saved.tarjeta || 0), 0);
+      const efectivo = mes.reduce((s, d) => s + Number(d.saved.efectivo || 0), 0);
+      const creditos = mes.reduce((s, d) => s + Number(d.saved.creditos || 0), 0);
+      const cinco = Math.round(venta * 0.05 * 100) / 100;
+      const propina = mes.reduce((s, d) => s + Number(d.saved.propinaTC || 0), 0);
+      const staff = Math.round((cinco + propina) * 100) / 100;
+      const mix = Math.max(venta, 0.01);
+      const pc = (n) => Math.max(0, Math.round(n / mix * 1000) / 10);
+      const pEf = pc(efectivo), pTj = pc(tarjeta), pCr = pc(creditos);
+      const maxDay = Math.max(1, ...days.map((d) => d.venta));
+      const donut = `conic-gradient(#5a8f62 0 ${pEf}%, #3d6ea8 ${pEf}% ${pEf + pTj}%, #c4a35a ${pEf + pTj}% 100%)`;
+      const g = fixedOf(mes, venta);
+      const ben = Math.round((venta - g.total) * 100) / 100;
+      const head = `
+        <button type="button" class="no" data-back-ops="1" style="width:100%;margin-bottom:12px">← Pedidos</button>
+        ${contaNav()}
+        <div class="day-nav">
+          <button type="button" data-month="-1">‹</button>
+          <strong style="font-size:18px;color:var(--navy)">${monthName(contaMonth)}</strong>
+          <button type="button" data-month="1">›</button>
+        </div>`;
+      if (contaTab === "gastos") {
+        $("view").innerHTML = head + `
+          <div class="card">
+            <h2>Gastos</h2>
+            <p class="gasto-note">${g.fromCierres ? `Tasa ${tasaTxt(g.tasa)} pesos por dólar, de los cierres de este mes.` : `Tasa ${tasaTxt(g.tasa)} pesos por dólar.`}</p>
+            <div class="pline"><span class="lab">Nómina</span><span class="val">${rd(g.nomina)}</span></div>
+            <div class="pline"><span class="lab">Alquiler carrito<small>1,500 USD × ${tasaTxt(g.tasa)}</small></span><span class="val">${rd(g.carrito)}</span></div>
+            <div class="pline"><span class="lab">Local<small>2,000 USD × ${tasaTxt(g.tasa)}</small></span><span class="val">${rd(g.local)}</span></div>
+            <div class="pline"><span class="lab">Supermercado<small>33% de la venta</small></span><span class="val">${rd(g.super)}</span></div>
+            <div class="pline"><span class="lab">ITBIS<small>18% de la venta</small></span><span class="val">${rd(g.itbis)}</span></div>
+            <div class="pline total"><span class="lab">Total gastos</span><span class="val">${rd(g.total)}</span></div>
+          </div>`;
+        return;
+      }
+      if (contaTab === "beneficios") {
+        $("view").innerHTML = head + `
+          <div class="hero-num gain">
+            <div class="k">Beneficio RD$</div>
+            <div class="n">${rd(ben)}</div>
+            <p>Venta menos los gastos del mes</p>
+          </div>
+          ${ejemploNote(mes)}
+          <div class="card">
+            <h2>Cómo sale</h2>
+            <div class="pline"><span class="lab">Venta</span><span class="val">${rd(venta)}</span></div>
+            <div class="pline out"><span class="lab">Nómina</span><span class="val">${rd(g.nomina)}</span></div>
+            <div class="pline out"><span class="lab">Alquiler carrito</span><span class="val">${rd(g.carrito)}</span></div>
+            <div class="pline out"><span class="lab">Local</span><span class="val">${rd(g.local)}</span></div>
+            <div class="pline out"><span class="lab">Supermercado<small>33% de la venta</small></span><span class="val">${rd(g.super)}</span></div>
+            <div class="pline out"><span class="lab">ITBIS<small>18% de la venta</small></span><span class="val">${rd(g.itbis)}</span></div>
+            <div class="pline total${ben < 0 ? " out" : ""}"><span class="lab">Beneficio</span><span class="val">${rd(ben)}</span></div>
+          </div>`;
+        return;
+      }
+      $("view").innerHTML = head + `
+        <div class="hero-num">
+          <div class="k">Total venta RD$</div>
+          <div class="n">${rd(venta)}</div>
+          <p>${mes.length} cuadre${mes.length === 1 ? "" : "s"} · salón + halfway + deliverys</p>
+        </div>
+        ${ejemploNote(mes)}
+        <div class="card">
+          <h2>Cómo se cobró</h2>
+          <div class="donut-wrap">
+            <div class="donut" style="background:${donut}"><span>Cobro</span></div>
+            <div>
+              <div class="legend"><span><b style="background:#5a8f62"></b>Efectivo ${rd(efectivo)}</span></div>
+              <div class="legend"><span><b style="background:#3d6ea8"></b>Tarjeta ${rd(tarjeta)}</span></div>
+              <div class="legend"><span><b style="background:#c4a35a"></b>Créditos ${rd(creditos)}</span></div>
+            </div>
+          </div>
+          <div class="mix"><i class="c" style="width:${pEf}%"></i><i class="t" style="width:${pTj}%"></i><i class="r" style="width:${pCr}%"></i></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi cash"><div class="k">Efectivo RD$</div><div class="n">${rd(efectivo)}</div></div>
+          <div class="kpi cardpay"><div class="k">Tarjeta RD$</div><div class="n">${rd(tarjeta)}</div></div>
+        </div>
+        <div class="kpi" style="margin-bottom:16px"><div class="k">Créditos RD$</div><div class="n">${rd(creditos)}</div></div>
+        <div class="card">
+          <h2>Propinas</h2>
+          <div class="pline"><span class="lab">5% de la venta</span><span class="val">${rd(cinco)}</span></div>
+          <div class="pline"><span class="lab">Propina de tarjeta</span><span class="val">${rd(propina)}</span></div>
+          <div class="pline"><span class="lab">Total propina</span><span class="val">${rd(staff)}</span></div>
+        </div>
+        <div class="card">
+          <h2>Venta por día</h2>
+          <div class="bars-month">${days.map((d) => {
+            const h = d.has ? Math.max(8, Math.round(d.venta / maxDay * 100)) : 3;
+            const show = Number(d.k.slice(8)) === 1 || Number(d.k.slice(8)) % 5 === 0;
+            return `<button type="button" class="col" data-open-day="${d.k}"><i class="${d.has ? "" : "off"}" style="height:${h}px"></i>${show ? `<em>${Number(d.k.slice(8))}</em>` : ""}</button>`;
+          }).join("")}</div>
+        </div>
+        <div class="card">
+          <h2>Cuadres del mes</h2>
+          ${mes.length ? weeksOf(mes).map((w) => `
+            <div class="week-block">
+              <button type="button" class="week-head" data-open-week="${w.id}">
+                <span class="d">${w.label}<span class="m">${w.days.length} día${w.days.length === 1 ? "" : "s"} · toca para ver</span></span>
+                <span class="v">${rd(w.venta)}</span>
+              </button>
+              ${openWeek === w.id ? `<div class="week-days">${w.days.map((d) => `
+                <button type="button" class="day-row" data-open-day="${d.k}">
+                  <span class="d">${weekDayEs(d.k)} ${paperDate(d.k)}</span>
+                  <span class="v">${rd(d.venta)}</span>
+                </button>`).join("")}</div>` : ""}
+            </div>`).join("") : `<p class="empty">Todavía no hay cuadres este mes.</p>`}
+        </div>
+      `;
+    }
+
+    function renderPedidos() {
+      const open = orders.filter((o) => o.status !== "done" && o.status !== "cancelled")
+        .sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      const closed = sold(orders.filter((o) => o.status === "done" && dayKey(o.statusTs || o.ts || 0) === todayKey()))
+        .sort((a, b) => (b.statusTs || b.ts || 0) - (a.statusTs || a.ts || 0));
+      const card = (o, openTicket) => {
+        const items = (o.items || []).map((i) => {
+          const bits = [i.bread, i.pick, (i.ings || []).join(", "), i.note].filter(Boolean).join(" · ");
+          return `<li><strong>${i.qty}× ${i.name}</strong>${bits ? " — " + bits : ""}</li>`;
+        }).join("");
+        const t = new Date(o.ts || 0).toLocaleTimeString("es-DO", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+        const pay = PAY[o.pay] || "";
+        const badge = openTicket
+          ? `<span class="st new"><span class="pulse"></span>Preparando</span>`
+          : `<span class="st ${o.pay || "done"}">Pagado${pay ? " · " + pay : ""}</span>`;
+        const payAsk = payingId === o.id
+          ? `<p class="pay-q">¿Cómo pagó?</p>
+             <div class="btns pay">
+               <button class="go" data-id="${o.id}" data-pay="cash">Efectivo</button>
+               <button class="ok" data-id="${o.id}" data-pay="card">Tarjeta</button>
+             </div>`
+          : "";
+        const deliver = openTicket && payingId !== o.id
+          ? `<button class="ok" data-id="${o.id}" data-st="done">Entregado</button>`
+          : "";
+        return `<article class="ticket ${openTicket ? "new" : "closed"}">
+          <div class="ticket-top">
+            <div>
+              <div class="loc">${locEs(o)}</div>
+              <div class="meta">#${o.id} · ${t}</div>
+            </div>
+            ${badge}
+          </div>
+          <ul>${items}</ul>
+          <div class="ticket-foot">
+            <div class="amt">${money(o.total || 0)}</div>
+            ${deliver}
+          </div>
+          ${payAsk}
+        </article>`;
+      };
+      $("view").innerHTML = `
+        <div class="card" style="margin-bottom:16px">
+          <h2>Pedidos abiertos · ${open.length}</h2>
+          ${open.length ? open.map((o) => card(o, true)).join("") : `<p class="empty">No hay pedidos abiertos.</p>`}
+        </div>
+        <div class="card">
+          <h2>Completados de hoy · ${closed.length}</h2>
+          ${closed.length ? closed.map((o) => card(o, false)).join("") : `<p class="empty">Hoy no hay entregas.</p>`}
+        </div>
+      `;
+    }
+
+    $("enter").onclick = login;
+    $("pin").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+    document.querySelector(".tabs").onclick = (e) => {
+      const b = e.target.closest("[data-tab]"); if (!b) return;
+      tab = b.dataset.tab;
+      document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === b));
+      $("range").style.display = tab === "hoy" ? "flex" : "none";
+      render();
+    };
+    $("range").onclick = (e) => {
+      const b = e.target.closest("[data-range]"); if (!b) return;
+      range = b.dataset.range;
+      document.querySelectorAll("#range .chip").forEach((x) => x.classList.toggle("on", x === b));
+      render();
+    };
+    function goTab(next) {
+      tab = next;
+      contaTab = "ventas";
+      $("drawer").hidden = true;
+      document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x.dataset.tab === next));
+      render();
+    }
+    $("menu-btn").onclick = () => { $("drawer").hidden = !$("drawer").hidden; };
+    $("drawer-bg").onclick = () => { $("drawer").hidden = true; };
+    function openOficina() {
+      $("drawer").hidden = true;
+      if (!token) {
+        $("pin").value = "";
+        $("login").hidden = false;
+        $("board").hidden = true;
+        $("pin").focus();
+        return;
+      }
+      contaMonth = todayKey().slice(0, 7);
+      contaTab = "ventas";
+      goTab("conta");
+    }
+    document.querySelector(".drawer-panel").onclick = (e) => {
+      const b = e.target.closest("[data-go]"); if (!b) return;
+      if (b.dataset.go === "conta") { openOficina(); return; }
+      goTab(b.dataset.go);
+    };
+    $("login-back").onclick = () => {
+      $("login").hidden = true;
+      $("board").hidden = false;
+      $("pin").value = "";
+    };
+    $("view").onclick = (e) => {
+      const ctab = e.target.closest("[data-conta-tab]");
+      if (ctab) {
+        const next = ctab.dataset.contaTab;
+        if (contaTab === "subir" && next !== "subir") readCierreForm();
+        contaTab = next;
+        if (next === "subir" && !cierreDay) {
+          cierreDay = todayKey();
+          loadCierreDraft(cierreDay);
+        }
+        render();
+        return;
+      }
+      if (e.target.closest("[data-back-ops]")) { goTab("pedidos"); return; }
+      if (e.target.closest("[data-back-conta]")) {
+        contaTab = "ventas";
+        render();
+        return;
+      }
+      const openWk = e.target.closest("[data-open-week]");
+      if (openWk && !e.target.closest("[data-open-day]")) {
+        const id = openWk.dataset.openWeek;
+        openWeek = openWeek === id ? "" : id;
+        renderConta();
+        return;
+      }
+      const openDay = e.target.closest("[data-open-day]");
+      if (openDay) {
+        cierreDay = openDay.dataset.openDay;
+        loadCierreDraft(cierreDay);
+        fotoAviso = "";
+        cierreFromFoto = false;
+        contaTab = "subir";
+        renderCierre();
+        return;
+      }
+      const month = e.target.closest("[data-month]");
+      if (month) {
+        const [y, m] = (contaMonth || todayKey().slice(0, 7)).split("-").map(Number);
+        const d = new Date(Date.UTC(y, m - 1 + Number(month.dataset.month), 1));
+        contaMonth = d.toISOString().slice(0, 7);
+        renderConta();
+        return;
+      }
+      const day = e.target.closest("[data-day]");
+      if (day) {
+        cierreDay = shiftDay(cierreDay || todayKey(), +day.dataset.day);
+        loadCierreDraft(cierreDay);
+        fotoAviso = "";
+        cierreFromFoto = false;
+        renderCierre();
+        return;
+      }
+      if (e.target.closest("[data-subir-cierre]")) {
+        cierreDay = todayKey();
+        loadCierreDraft(cierreDay);
+        fotoAviso = "";
+        cierreFromFoto = false;
+        contaTab = "subir";
+        renderCierre();
+        return;
+      }
+      if (e.target.closest("[data-save-cierre]")) { saveCierre(); return; }
+      const fotoBtn = e.target.closest("[data-foto]");
+      if (fotoBtn) {
+        fotoTarget = contaTab === "subir" ? "day" : "conta";
+        const input = $(fotoBtn.dataset.foto === "cam" ? "foto-cam-in" : "foto-gal-in");
+        input.value = "";
+        input.click();
+        return;
+      }
+      const ins = e.target.closest("[data-insert-foto]");
+      if (ins) {
+        if (ins.dataset.insertFoto === "all") {
+          const pending = fotoReads.map((r, idx) => r.status === "listo" ? idx : -1).filter((idx) => idx >= 0);
+          (async () => {
+            for (const idx of pending) await insertarFoto(idx);
+          })();
+        } else {
+          insertarFoto(+ins.dataset.insertFoto);
+        }
+        return;
+      }
+      const b = e.target.closest("[data-id]");
+      if (!b) return;
+      if (b.dataset.pay) { setStatus(b.dataset.id, "done", b.dataset.pay); return; }
+      if (b.dataset.st === "done") { payingId = b.dataset.id; render(); return; }
+      setStatus(b.dataset.id, b.dataset.st);
+    };
+    $("view").addEventListener("input", (e) => {
+      const foto = e.target.closest("[data-foto-i]");
+      if (foto) {
+        const i = +foto.dataset.fotoI;
+        const item = fotoReads[i];
+        if (item && item.cierre) {
+          item.cierre[foto.dataset.fotoField] = foto.value;
+          paintFoto(i);
+        }
+        return;
+      }
+      if (tab !== "conta" || contaTab !== "subir") return;
+      if (e.target.id === "c-fecha") {
+        const next = e.target.value;
+        if (!next) return;
+        cierreDay = next;
+        loadCierreDraft(cierreDay);
+        renderCierre();
+        return;
+      }
+      readCierreForm();
+      paintCierre(cierreNums(cierreDay));
+    });
+    $("foto-cam-in").addEventListener("change", () => { if ($("foto-cam-in").files.length) leerFotos($("foto-cam-in").files); });
+    $("foto-gal-in").addEventListener("change", () => { if ($("foto-gal-in").files.length) leerFotos($("foto-gal-in").files); });
+    load();
+    setInterval(load, 4000);
+  </script>
+</body>
+</html>
