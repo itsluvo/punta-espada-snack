@@ -326,22 +326,6 @@
   </style>
 </head>
 <body>
-  <div id="login" hidden>
-    <div class="login-hero">
-      <img class="bg" src="photos/hero.jpg?v=20260928fairway" alt="" />
-      <div class="fade"></div>
-    </div>
-    <div class="login-body">
-      <img class="logo" src="logo.png?v=20260901pe1" alt="Punta Espada" />
-      <div style="letter-spacing:.16em;font-size:11px;font-weight:700;color:#3f8587;text-align:center">CAP CANA</div>
-      <h1>Oficina</h1>
-      <p>Pon la clave para entrar.</p>
-      <input id="pin" type="password" inputmode="numeric" autocomplete="off" />
-      <button class="go" style="width:100%;margin-top:12px;min-height:56px;border:0;border-radius:14px;font-weight:800" id="enter">Entrar</button>
-      <button type="button" class="no" id="login-back" style="width:100%;margin-top:10px;min-height:48px;border:0;border-radius:14px;font-weight:800">← Pedidos</button>
-    </div>
-  </div>
-
   <div id="board">
     <header class="app">
       <div class="brand">
@@ -360,7 +344,23 @@
       <div class="drawer-bg" id="drawer-bg"></div>
       <div class="drawer-panel">
         <h4>Menú</h4>
+        <button type="button" data-go="pedidos">Pedidos</button>
+        <button type="button" data-go="hoy">Ventas</button>
         <button type="button" data-go="conta">Oficina</button>
+      </div>
+    </div>
+    <div id="login" hidden>
+      <div class="login-hero">
+        <img class="bg" src="photos/hero.jpg?v=20260928fairway" alt="" />
+        <div class="fade"></div>
+      </div>
+      <div class="login-body">
+        <img class="logo" src="logo.png?v=20260901pe1" alt="Punta Espada" />
+        <div style="letter-spacing:.16em;font-size:11px;font-weight:700;color:#3f8587;text-align:center">CAP CANA</div>
+        <h1>Oficina</h1>
+        <p>Pon la clave para entrar.</p>
+        <input id="pin" type="password" inputmode="numeric" autocomplete="off" />
+        <button class="go" style="width:100%;margin-top:12px;min-height:56px;border:0;border-radius:14px;font-weight:800" id="enter">Entrar</button>
       </div>
     </div>
     <div class="tabs" id="tabs">
@@ -499,7 +499,7 @@
             sessionStorage.removeItem("golf-office");
             if (tab === "conta") {
               $("login").hidden = false;
-              $("board").hidden = true;
+              $("board").hidden = false;
             }
             return;
           }
@@ -531,9 +531,13 @@
       $("caja").innerHTML = `
         <div class="kpi cash"><div class="k">Hoy efectivo</div><div class="n">${money(todayPay.cash)}</div></div>
         <div class="kpi cardpay"><div class="k">Hoy tarjeta</div><div class="n">${money(todayPay.card)}</div></div>`;
-      $("tabs").style.display = tab === "conta" ? "none" : "flex";
-      $("caja").style.display = tab === "conta" ? "none" : "grid";
-      $("range").style.display = tab === "hoy" ? "flex" : "none";
+      const pin = !$("login").hidden;
+      $("view").hidden = pin;
+      document.querySelectorAll(".drawer-panel [data-go]").forEach((b) => b.classList.toggle("on", b.dataset.go === (pin ? "conta" : tab)));
+      $("tabs").style.display = (tab === "conta" || pin) ? "none" : "flex";
+      $("caja").style.display = (tab === "conta" || pin) ? "none" : "grid";
+      $("range").style.display = (!pin && tab === "hoy") ? "flex" : "none";
+      if (pin) return;
       if (tab === "hoy") renderHoy();
       else if (tab === "conta") {
         if (contaTab === "subir") renderCierre();
@@ -903,7 +907,6 @@
       }
       const n = cierreNums(cierreDay);
       $("view").innerHTML = `
-        <button type="button" class="no" data-back-ops="1" style="width:100%;margin-bottom:12px">← Pedidos</button>
         ${contaNav()}
         <div class="cierre-sheet">
           <h3>Subir cierre</h3>
@@ -1090,7 +1093,6 @@
       const g = fixedOf(mes, venta);
       const ben = Math.round((venta - g.total) * 100) / 100;
       const head = `
-        <button type="button" class="no" data-back-ops="1" style="width:100%;margin-bottom:12px">← Pedidos</button>
         ${contaNav()}
         <div class="day-nav">
           <button type="button" data-month="-1">‹</button>
@@ -1269,7 +1271,8 @@
       if (!token) {
         $("pin").value = "";
         $("login").hidden = false;
-        $("board").hidden = true;
+        $("board").hidden = false;
+        render();
         $("pin").focus();
         return;
       }
@@ -1280,12 +1283,8 @@
     document.querySelector(".drawer-panel").onclick = (e) => {
       const b = e.target.closest("[data-go]"); if (!b) return;
       if (b.dataset.go === "conta") { openOficina(); return; }
-      goTab(b.dataset.go);
-    };
-    $("login-back").onclick = () => {
       $("login").hidden = true;
-      $("board").hidden = false;
-      $("pin").value = "";
+      goTab(b.dataset.go);
     };
     $("view").onclick = (e) => {
       const ctab = e.target.closest("[data-conta-tab]");
